@@ -1,6 +1,6 @@
 (library
  (name lib)
- (modules ast parser lexer machine)
+ (modules ast parser lexer machine vector)
  (libraries menhirLib)
 )
 

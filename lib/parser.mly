@@ -7,33 +7,10 @@
 
 %token NEWLINE                  // newline '\n' token
 
-%start <Ast.statement list> main
+%start <unit> main
 
 %%
 
 main:
-        | sl = statement_list; EOF { sl }
+        | EOF { () }
         ;
-
-statement_list:
-        | s1 = statement; NEWLINE; s2 = statement_list { s1 :: s2 }
-        | s = statement { [s] }
-        ;
-
-statement:
-        | a = ainstruction { Ast.AInst a }
-        | c = cinstruction { Ast.CInst c }
-        | l = label { l }
-        ;
-
-label:
-        | l = LABEL { Ast.Label l }
-        ;
-
-ainstruction:
-        | i = AINT { Ast.IntAddr i }
-        | s = ASTR; { Ast.StrAddr s }
-        ;
-
-cinstruction:
-        | c = CINST { c }
