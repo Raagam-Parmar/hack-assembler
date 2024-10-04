@@ -1,0 +1,12 @@
+(library
+ (name lib)
+ (modules ast parser lexer machine)
+ (libraries menhirLib)
+)
+
+(menhir (modules parser)
+;  (flags --explain --exn-carries-state --trace --strict --dump)
+  (flags --strict)
+)
+
+(ocamllex (modules lexer))
