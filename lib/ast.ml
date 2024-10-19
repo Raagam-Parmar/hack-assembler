@@ -38,8 +38,8 @@ type computation =
 
 
 type a_inst = 
-        | IntAddr of int
-        | StrAddr of string
+        | IntAddr of int (* this is the final form of a_inst *)
+        | StrAddr of string  (* this is how a_inst will look like in beginning, all numbers will be strings "1", "2", ... *)
 
 type c_inst = destination option * computation * jump option 
 

@@ -101,3 +101,32 @@ end = struct
         let encode (r : Ast.register) (bop : Ast.biOp) : int list = 
                 encode_r r @ encode_op bop
 end
+
+
+module Ainst : sig
+        val encode : (string, int) Hashtbl.t -> Ast.a_inst -> Ast.a_inst
+end = struct
+        let encode_var (h : (string, int) Hashtbl.t) (a : Ast.a_inst) : Ast.a_inst = 
+                match a with
+                | Ast.IntAddr _ -> failwith "machine.Ainst.encode_var: unexpected argument Ast.IntAddrs"
+                | Ast.StrAddr s ->
+                        if Hashtbl.mem h s then 
+                                Ast.IntAddr (Hashtbl.find h s)
+                        else 
+                                failwith "machine.Ainst.encode_var: can not find var in hashtable"
+
+        let encode_addr (h : (string, int) Hashtbl.t) (a : Ast.a_inst) : Ast.a_inst = 
+                match a with
+                | Ast.IntAddr n -> Vector.fill_truncate 15 (Vector.to_binary n)
+                | Ast.StrAddr _ -> failwith "machine.Ainst.encode_var: unexpected argument Ast.StrAddr"
+
+        let encode (h : (string, int) Hashtbl.t (a : Ast.a_inst) : Ast.a_inst = 
+                match a with
+                | Ast.IntAddr n -> IntAddr n
+                | Ast.StrAddr s -> 
+                        
+        
+end
+
+
+(* try Some (int_of_string "125a") with Failure _ -> None;; *)
