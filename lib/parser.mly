@@ -5,25 +5,24 @@
 %token <int> AINT               // a_inst IntAddr token carrying an
 %token <Ast.c_inst> CINST       // c_inst token carrying Ast.c_inst
 
-%token NEWLINE                  // newline '\n' token
-
 %start <Ast.statement list> main
 
 %%
 
 main:
+        | EOF { [] }
         | sl = statement_list; EOF { sl }
         ;
 
 statement_list:
-        | s1 = statement; NEWLINE; s2 = statement_list { s1 :: s2 }
+        | s1 = statement; s2 = statement_list { s1 :: s2 }
         | s = statement { [s] }
         ;
 
 statement:
-        | a = ainstruction { Ast.AInst a }
-        | c = cinstruction { Ast.CInst c }
-        | l = label { l }
+        | a = ainstruction  { Ast.AInst a }
+        | c = cinstruction  { Ast.CInst c }
+        | l = label         { l }
         ;
 
 label:
@@ -31,8 +30,8 @@ label:
         ;
 
 ainstruction:
-        | i = AINT { Ast.IntAddr i }
-        | s = ASTR; { Ast.StrAddr s }
+        | i = AINT  { Ast.IntAddr i }
+        | s = ASTR  { Ast.StrAddr s }
         ;
 
 cinstruction:

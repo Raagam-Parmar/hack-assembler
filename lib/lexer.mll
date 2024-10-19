@@ -125,6 +125,8 @@ let space        = [' ' '\t']
 let spaces       = space+
 let newline      = '\r' | '\n' | "\r\n"
 
+let ignore       = space | newline
+
 let digit        = ['0'-'9']
 let lower_char   = ['a'-'z']
 let upper_char   = ['A'-'Z']
@@ -161,20 +163,13 @@ let cinst        = (destination '=')? computation (';' jump)?
 rule read = 
         parse
         | eof           { EOF }
-        | spaces        { read lexbuf }
-        | newline       { next_line lexbuf; skipNewLines lexbuf }
+        | ignore        { read lexbuf }
+        | "/*"          { skipMultiComment lexbuf }
         | "//"          { skipComment lexbuf }
         | a_inst_str    { ASTR (reduce_a_inst_str (Lexing.lexeme lexbuf)) }
         | a_inst_int    { AINT (reduce_a_inst_int (Lexing.lexeme lexbuf)) }
         | label         { LABEL (reduce_label (Lexing.lexeme lexbuf)) }
         | cinst         { CINST (reduce_c_inst_type (Lexing.lexeme lexbuf)) }
-
-and skipNewLines = 
-        parse 
-        | space         { skipNewLines lexbuf }
-        | newline       { next_line lexbuf; skipNewLines lexbuf }
-        | eof           { EOF }
-        | ""            { NEWLINE }
 
 and skipComment = 
         parse
@@ -182,3 +177,14 @@ and skipComment =
         | eof           { EOF }
         | _             { read lexbuf }
         
+and skipMultiComment = 
+        parse
+        | [^'*']        { skipMultiComment lexbuf }
+        | '*'           { endMultiComment lexbuf }
+        | eof           { EOF }
+
+and endMultiComment =
+        parse
+        | '/'           { read lexbuf }
+        | eof           { EOF }
+        | _             { skipMultiComment lexbuf }
