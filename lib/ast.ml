@@ -34,22 +34,18 @@ type computation =
         | Constant of const
         | Unary of unOp * register
         | Binary of biOp * register
-        (* the binary operations are applied to D, register which is implied *)
-
-
-type a_inst = 
-        | IntAddr of int (* this is the final form of a_inst *)
-        | StrAddr of string  (* this is how a_inst will look like in beginning, all numbers will be strings "1", "2", ... *)
+        (** the binary operations are applied to D, register which is implied *)
 
 type c_inst = destination option * computation * jump option 
 
-type instruction = 
-        | AInst of a_inst
+type 'v instruction = 
+        | AInst of 'v
         | CInst of c_inst
 
 
+(** reevaluate if lael has to be of type string, it can be of any type... *)
 type label = Label of string
 
-type block = label option * instruction list
+type 'v block = label option * 'v instruction list
 
-type program = block list
+type 'v program = 'v block list

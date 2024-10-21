@@ -54,7 +54,7 @@ end
 
 
 module Unary : sig
-        val encode : Ast.register -> Ast.unOp -> int list
+        val encode : Ast.unOp -> Ast.register -> int list
 end = struct
         let encode_r (r : Ast.register) : int list = 
                 match r with
@@ -75,7 +75,7 @@ end = struct
                 | A -> [0; 1; 1; 0; 1; 1; 1]
                 | M -> [1; 1; 1; 0; 1; 1; 1]
         
-        let encode (r : Ast.register) (uop : Ast.unOp) : int list = 
+        let encode (uop : Ast.unOp) (r : Ast.register) : int list = 
                 match uop with
                 | Ast.Succ      -> succ r
                 | _             -> encode_r r @ encode_op uop       
@@ -83,7 +83,7 @@ end
 
 
 module Binary : sig
-        val encode : Ast.register -> Ast.biOp -> int list
+        val encode : Ast.biOp -> Ast.register -> int list
 end = struct
         let encode_r (r : Ast.register) : int list = 
                 match r with
@@ -98,35 +98,47 @@ end = struct
                 | BinAnd  -> [0; 0; 0; 0; 0; 0]
                 | BinOr   -> [0; 1; 0; 1; 0; 1]
 
-        let encode (r : Ast.register) (bop : Ast.biOp) : int list = 
+        let encode (bop : Ast.biOp) (r : Ast.register)  : int list = 
                 encode_r r @ encode_op bop
 end
 
 
-module Ainst : sig
-        val encode : (string, int) Hashtbl.t -> Ast.a_inst -> Ast.a_inst
+module Computation : sig
+        val encode : Ast.computation -> int list
 end = struct
-        let encode_var (h : (string, int) Hashtbl.t) (a : Ast.a_inst) : Ast.a_inst = 
-                match a with
-                | Ast.IntAddr _ -> failwith "machine.Ainst.encode_var: unexpected argument Ast.IntAddrs"
-                | Ast.StrAddr s ->
-                        if Hashtbl.mem h s then 
-                                Ast.IntAddr (Hashtbl.find h s)
-                        else 
-                                failwith "machine.Ainst.encode_var: can not find var in hashtable"
-
-        let encode_addr (h : (string, int) Hashtbl.t) (a : Ast.a_inst) : Ast.a_inst = 
-                match a with
-                | Ast.IntAddr n -> Vector.fill_truncate 15 (Vector.to_binary n)
-                | Ast.StrAddr _ -> failwith "machine.Ainst.encode_var: unexpected argument Ast.StrAddr"
-
-        let encode (h : (string, int) Hashtbl.t (a : Ast.a_inst) : Ast.a_inst = 
-                match a with
-                | Ast.IntAddr n -> IntAddr n
-                | Ast.StrAddr s -> 
-                        
-        
+        let encode (comp : Ast.computation) : int list = 
+                match comp with
+                | Ast.Constant c -> Const.encode c
+                | Ast.Unary (u, r) -> Unary.encode u r
+                | Ast.Binary (b, r) -> Binary.encode b r
 end
 
 
-(* try Some (int_of_string "125a") with Failure _ -> None;; *)
+module Cinst : sig
+        val encode : Ast.c_inst -> int list
+end = struct
+        let encode (c : Ast.c_inst) : int list = 
+                match c with (dest, comp, jump) -> (Computation.encode comp) @ (Dest.encode dest) @ (Jump.encode jump)
+
+end
+
+(** reevaluate if you actually need string int hashtbl, or can you make do with some other type of hashtbl *)
+module Instruction : sig
+        val encode : (string, int) Hashtbl.t -> string Ast.instruction -> int list
+end = struct
+        let retrieve_int (h : (string, int) Hashtbl.t) (symbol : string) : int = 
+                let x = try Some (int_of_string symbol) with Failure _ -> None in
+                match x with
+                | Some x ->     x
+                | None   ->     if Hashtbl.mem h symbol then
+                                        Hashtbl.find h symbol
+                                else failwith "machine.Ainst.retrieve_int: unexpected `CInst _' argument"
+
+
+        let encode (h : (string, int) Hashtbl.t) (a : string Ast.instruction) : int list = 
+                match a with
+                | AInst symbol -> let resolved = retrieve_int h symbol in 
+                        Vector.fill_truncate 15 (Vector.to_binary resolved)
+                | CInst c      -> Cinst.encode c
+
+end
