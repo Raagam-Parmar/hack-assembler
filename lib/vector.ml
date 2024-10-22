@@ -33,6 +33,14 @@ let rec fill_truncate (l : int) (v : int list) : int list =
                         | _ :: t -> t
 
 
+let to_int (a : int list) : int = 
+        List.fold_left (fun acc bit -> acc * 10 + bit) 0 a
+
+let to_string (a : int list) : string = 
+        string_of_int (to_int a)
+        
+              
+
 (* let to_int (l : int list) : int =  *)
                 
 
