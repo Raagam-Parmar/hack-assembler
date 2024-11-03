@@ -1,16 +1,1 @@
-(START)
-(F00)
-@2
-D=A
-(BAR)
-@3
-D=D+A
-@0
-M=D
-(VAR)
-@x
-M=D
-@END
-0;JMP
-(END)
-0;JMP
+A-D
