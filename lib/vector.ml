@@ -1,11 +1,5 @@
-let rec add_vector_combined a = 
-        match a with
-        | [] -> []
-        | head :: tail -> (fst head + snd head) :: (add_vector_combined tail)
-
 let add_vector (a : int list) (b : int list) : int list = 
-        let c = List.combine a b in
-        add_vector_combined c
+        List.map2 ( + ) a b
 
 let rec to_binary (n : int) : int list = 
         if (n < 0) then
@@ -36,9 +30,10 @@ let rec fill_truncate (l : int) (v : int list) : int list =
 let to_int (a : int list) : int = 
         List.fold_left (fun acc bit -> acc * 10 + bit) 0 a
 
-let to_string (a : int list) : string = 
-        string_of_int (to_int a)
-        
+let rec to_string (l : int list) : string = 
+        match l with
+        | [] -> ""
+        | head :: tail -> (string_of_int head) ^ (to_string tail)
               
 
 (* let to_int (l : int list) : int =  *)

@@ -125,7 +125,7 @@ module Cinst : sig
         val encode : Ast.c_inst -> int list
 end = struct
         let encode (c : Ast.c_inst) : int list = 
-                match c with (dest, comp, jump) -> (Comp.encode comp) @ (Dest.encode dest) @ (Jump.encode jump)
+                match c with (dest, comp, jump) -> [1; 1; 1] @ (Comp.encode comp) @ (Dest.encode dest) @ (Jump.encode jump)
 
 end
 
@@ -147,7 +147,7 @@ end = struct
         let encode (h : (string, int) Hashtbl.t) (a : string Ast.instruction) : int list = 
                 match a with
                 | AInst symbol -> let resolved = resolve_symbol h symbol in 
-                        Vector.fill_truncate 15 (Vector.to_binary resolved)
+                        Vector.fill_truncate 16 (Vector.to_binary resolved)
                 | CInst c      -> Cinst.encode c
 
 end
@@ -229,7 +229,7 @@ end = struct
 end
 
 
-module Block : sig
+module Blocks : sig
         val encode : (string, int) Hashtbl.t -> string Ast.Block.t -> int list list
 end = struct
         let encode (h : (string, int) Hashtbl.t) (b : string Ast.Block.t) : int list list = 
@@ -239,16 +239,12 @@ end
 
 module Program : sig
         val encode : (string, int) Hashtbl.t -> string Ast.program -> int list list
-        val encode_pretty_int : (string, int) Hashtbl.t -> string Ast.program -> int list
         val encode_pretty_string : (string, int) Hashtbl.t -> string Ast.program -> string list
 end = struct
         let rec encode (h : (string, int) Hashtbl.t) (p : string Ast.program) : int list list = 
                 match p with
                 | [] -> []
-                | b :: bs -> (Block.encode h b) @ encode h bs
-        
-        let encode_pretty_int (h : (string, int) Hashtbl.t) (p : string Ast.program) : int list = 
-                List.map Vector.to_int (encode h p)
+                | b :: bs -> (Blocks.encode h b) @ encode h bs
         
         let encode_pretty_string (h : (string, int) Hashtbl.t) (p : string Ast.program) : string list = 
                 List.map Vector.to_string (encode h p)

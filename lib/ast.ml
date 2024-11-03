@@ -45,7 +45,7 @@ type 'v instruction =
 type 'l label = Label of 'l
 
 module Block : sig
-        type 'v t
+        type 'v t = 'v label option * 'v instruction list
         val label_opt : 'v t -> 'v label option
         val label : 'v t -> 'v label
         val has_label : 'v t -> bool
