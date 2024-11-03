@@ -1,6 +1,27 @@
 {
         open Parser
-        (* open Lexing *)
+        open Lexing
+
+        (** [next_line lexbuf] updates the position of the current lexical buffer [lexbuf]
+        to point towards the start of the next line *)
+        let next_line (lexbuf : lexbuf) =
+                let pos = lexbuf.lex_curr_p in
+                lexbuf.lex_curr_p <- 
+                {
+                        pos with pos_bol = pos.pos_cnum;
+                        pos_lnum = pos.pos_lnum + 1
+                }
+
+        let rec reduce_a_inst (a_inst : string) : string =
+        if (a_inst.[0] = '@') || (a_inst.[0] = ' ') then
+                let length = String.length a_inst in
+                let reduced_a_inst = String.sub a_inst 1 (length - 1) in
+                reduce_a_inst reduced_a_inst
+        else
+                a_inst
+
+
+
 
 }
 
@@ -9,39 +30,43 @@ let spaces       = space+
 let newline      = '\r' | '\n' | "\r\n"
 
 let digit        = ['0'-'9']
+let int          = digit+
+
 let lower_char   = ['a'-'z']
 let upper_char   = ['A'-'Z']
 let allowed_misc = ':' | '.' |'$' | '_'
-let register     = 'A' | 'D' | 'M'
-let constant     = '0' | '1' | "-1"
-let b_op         = '+' | '-' | '&' | '|'
-
-
-let int          = digit+
 let allow_first  = lower_char | upper_char | allowed_misc
 let allow_rest   = lower_char | upper_char | allowed_misc | digit
+
 let allow_string = (allow_first) (allow_rest)*
-
-let label        = "(" (space*) (allow_string) (space*) ")"
-
-let a_inst_str   = "@" (space*) (allow_string)
-let a_inst_int   = "@" (space*) int
-
-let destination  = register+
-
-let bnot_reg     = '!' register
-let minus_reg    = '-' register
-let succ_reg     = register "+1"
-let pred_reg     = register "-1"
-let d_bop_reg_1  = 'D' b_op ('A' | 'M')
-let d_bop_reg_2  = ('A' | 'M') '-' 'D'
-let computation  = constant | bnot_reg | minus_reg | succ_reg | pred_reg | d_bop_reg_1 | d_bop_reg_2 | register
 
 let jump         = "JGT" | "JGE" | "JEQ" | "JNE" | "JLE" | "JLT" | "JMP"
 
-let cinst        = (destination '=')? computation (';' jump)?
+(* let register     = 'A' | 'D' | 'M' *)
+
+let label        = '(' (allow_string) ')'
+
+let ainst        = '@' (spaces*) (allow_string) | '@' (spaces*) (int)
+
 
 rule read = 
         parse
         | eof           { EOF }
-        
+        (* | '0'           { ZERO }
+        | '1'           { ONE }
+        | "-1"          { MINUS_ONE }
+        | '!'           { BNOT }
+        | '|'           { BOR }
+        | '&'           { BAND }
+        | '-'           { MINUS }
+        | '+'           { PLUS }
+        | '='           { EQUAL }
+        | ';'           { SEMI }
+        | 'D'           { D }
+        | 'A'           { A }
+        | 'M'           { M }
+
+        | label         { LABEL (Lexing.lexeme lexbuf) }
+        | jump          { JUMP (Lexing.lexeme lexbuf) }
+        | ainst         { AINST (reduce_a_inst (Lexing.lexeme lexbuf)) }
+         *)

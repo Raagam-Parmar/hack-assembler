@@ -163,7 +163,7 @@ end = struct
                         (
                         match Ast.Block.label_opt head with
                         | Some Label l -> 
-                                if Hashtbl.mem h l then failwith "machine.LabelTable.populate: repeated label"
+                                if Hashtbl.mem h l then failwith ("machine.LabelTable.populate: repeated label" ^ l)
                                 else Hashtbl.add h l offset
                         | None -> () 
                         ) ;
@@ -240,7 +240,12 @@ end
 module Program : sig
         val encode : (string, int) Hashtbl.t -> string Ast.program -> int list list
         val encode_pretty_string : (string, int) Hashtbl.t -> string Ast.program -> string list
+        val populate : (string, int) Hashtbl.t -> string Ast.program -> unit
 end = struct
+        let populate (h : (string, int) Hashtbl.t) ( p : string Ast.program) : unit = 
+                LabelTable.populate h p;
+                VarTable.populate h p
+
         let rec encode (h : (string, int) Hashtbl.t) (p : string Ast.program) : int list list = 
                 match p with
                 | [] -> []
