@@ -208,7 +208,7 @@ end = struct
                 | CInst _ :: tail -> edit_instructions h tail
                 | AInst v :: tail -> 
                         (
-                        if not(Hashtbl.mem h v) then Hashtbl.add h v 0;
+                        if not(Hashtbl.mem h v) then Hashtbl.add h v offset;
                         let new_offset = offset + 1 in
                         edit_instructions ~offset:new_offset h tail
                         )
