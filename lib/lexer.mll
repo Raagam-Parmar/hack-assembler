@@ -62,7 +62,6 @@ rule read =
         | eof           { EOF }
         | '0'           { ZERO }
         | '1'           { ONE }
-        | "-1"          { MINUS_ONE }
         | '!'           { BNOT }
         | '|'           { BOR }
         | '&'           { BAND }

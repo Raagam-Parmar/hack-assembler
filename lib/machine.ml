@@ -163,7 +163,7 @@ end = struct
                         (
                         match Ast.Block.label_opt head with
                         | Some Label l -> 
-                                if Hashtbl.mem h l then failwith ("machine.LabelTable.populate: repeated label" ^ l)
+                                if Hashtbl.mem h l then failwith ("machine.LabelTable.populate: repeated label " ^ l)
                                 else Hashtbl.add h l offset
                         | None -> () 
                         ) ;
@@ -202,16 +202,23 @@ end = struct
                 )
 
 
-        let rec edit_instructions ?(offset=16) (h : (string, int) Hashtbl.t) (insts : string Ast.instruction list) : unit = 
+        let rec edit_instructions (offset : int) (h : (string, int) Hashtbl.t) (insts : string Ast.instruction list) : int = 
                 match insts with
-                | [] -> ()
-                | CInst _ :: tail -> edit_instructions h tail
+                | [] -> offset
+                | CInst _ :: tail -> edit_instructions offset h tail
                 | AInst v :: tail -> 
-                        (
-                        if not(Hashtbl.mem h v) then Hashtbl.add h v offset;
-                        let new_offset = offset + 1 in
-                        edit_instructions ~offset:new_offset h tail
-                        )
+                        match int_of_string_opt v with
+                        | Some _ -> edit_instructions offset h tail
+                        | None -> (
+                                if not (Hashtbl.mem h v) then 
+                                        (
+                                        Hashtbl.add h v offset;
+                                        let new_offset = offset + 1 in
+                                        edit_instructions new_offset h tail
+                                        )
+                                else
+                                        edit_instructions offset h tail
+                                )
 
         let rec edit_program ?(offset=16) (h : (string, int) Hashtbl.t) (p : string Ast.program) : unit = 
                 match p with
@@ -219,8 +226,8 @@ end = struct
                 | b :: bs -> 
                         (
                         let insts = Ast.Block.instructions b in
-                        edit_instructions h insts;
-                        edit_program ~offset:offset h bs
+                        let new_offset = edit_instructions offset h insts in
+                        edit_program ~offset:new_offset h bs  (* you need to update the offset count *)
                         )
 
         let populate ?(offset=16) (h : (string, int) Hashtbl.t) (p : string Ast.program) : unit = 

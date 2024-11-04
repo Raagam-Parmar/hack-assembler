@@ -72,6 +72,18 @@ end = struct
 
         let length (b : 'v t) : int = 
                 List.length (instructions b)
+(*         
+        let rec cinst_count (b : 'v t) : int = 
+                match instructions b with
+                | []      -> 0
+                | CInst _ :: tail -> 1 + (cinst_count (None, tail))
+                | AInst _ :: tail -> cinst_count (None, tail)
+        
+        let rec ainst_count (b : 'v t) : int = 
+                match instructions b with
+                | []      -> 0
+                | CInst _ :: tail -> ainst_count (None, tail)
+                | AInst _ :: tail -> 1 + (ainst_count (None, tail)) *)
 
         (* let rec symbols (b : 'v t) : 'v list = 
                 let insts = instructions b in

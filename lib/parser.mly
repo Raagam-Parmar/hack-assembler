@@ -2,7 +2,7 @@
 
 %token ZERO
 %token ONE
-%token MINUS_ONE
+// %token MINUS_ONE
 %token BNOT
 %token BOR
 %token BAND
@@ -19,7 +19,7 @@
 %token <Ast.jump> JUMP            // Jump token carrying a string
 
 %nonassoc reg
-%nonassoc ZERO ONE MINUS_ONE BNOT MINUS AINST
+%nonassoc ZERO ONE BNOT MINUS AINST //  MINUS_ONE
 %nonassoc A D M
 %nonassoc inst_list
 %nonassoc label
@@ -101,7 +101,7 @@ comp:
         // | A MINUS_ONE           { Ast.Unary (Pred, A) }
         // | D MINUS_ONE           { Ast.Unary (Pred, D) }
         // | M MINUS_ONE           { Ast.Unary (Pred, M) }
-        | register MINUS_ONE    { Ast.Unary (Pred, $1) }  // can i make this minus one?
+        | register MINUS ONE    { Ast.Unary (Pred, $1) }  // can i make this minus one?
 
         // | D PLUS A              { Ast.Binary (Add, A) }
         // | D MINUS A             { Ast.Binary (Sub, A) }
@@ -134,7 +134,7 @@ comp:
 const:
         | ZERO                  { Ast.Zero }
         | ONE                   { Ast.One }
-        | MINUS_ONE             { Ast.MinusOne }
+        | MINUS ONE             { Ast.MinusOne }
         ;
 
 jump:
