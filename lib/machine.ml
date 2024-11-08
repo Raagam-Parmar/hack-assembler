@@ -130,9 +130,9 @@ end = struct
 end
 
 
-(** [Instruction.encode] takes [(string, int) Hashtable.t] and [string Ast.instruction] and returns [int list] by reolving any AInst or using [Cinst.encode] to encode any CInst *)
-module Instruction : sig
-        val encode : (string, int) Hashtbl.t -> string Ast.instruction -> int list
+module Ainst : sig
+        val convert : (string, int) Hashtbl.t -> string Ast.instruction -> int Ast.instruction
+        val encode : int Ast.instruction -> int list
 end = struct
         let resolve_symbol (h : (string, int) Hashtbl.t) (symbol : string) : int = 
                 match int_of_string_opt symbol with
@@ -142,14 +142,40 @@ end = struct
                                 Hashtbl.find h symbol
                         else 
                                 failwith "machine.Ainst.retrieve_int: unexpected `CInst _' argument"
-
-
-        let encode (h : (string, int) Hashtbl.t) (a : string Ast.instruction) : int list = 
+                
+        let convert (h : (string, int) Hashtbl.t) (a : string Ast.instruction) : int Ast.instruction = 
                 match a with
-                | AInst symbol -> let resolved = resolve_symbol h symbol in 
-                        Vector.fill_truncate 16 (Vector.to_binary resolved)
-                | CInst c      -> Cinst.encode c
+                | AInst s -> AInst (resolve_symbol h s)
+                | CInst _ -> failwith "machine.Ainst.retrieve_int: unexpected `CInst _' argument"
+                | SkipF _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipF _' argument"
+                | SkipB _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipB _' argument"
+        
+        let encode (a : int Ast.instruction) : int list = 
+                match a with
+                | AInst i -> Vector.fill_truncate 16 (Vector.to_binary i)
+                | CInst _ -> failwith "machine.Ainst.retrieve_int: unexpected `CInst _' argument"
+                | SkipF _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipF _' argument"
+                | SkipB _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipB _' argument"
+end
 
+
+module Skip : sig
+        val convert : int -> int Ast.instruction
+end = struct
+        let convert (line_offset : int) : int Ast.instruction = 
+                AInst line_offset
+end
+
+(** [Instruction.encode] takes [(string, int) Hashtable.t] and [string Ast.instruction] and returns [int list] by reolving any AInst or using [Cinst.encode] to encode any CInst *)
+module Instruction : sig
+        (* val encode : (string, int) Hashtbl.t -> string Ast.instruction -> int list *)
+end = struct
+        let encode (h : (string, int) Hashtbl.t) (line_addr : int) (a : string Ast.instruction) : int list = 
+                match a with
+                | AInst _      -> Ainst.encode (Ainst.convert h a)
+                | CInst c      -> Cinst.encode c
+                | SkipF f      -> Ainst.encode (Skip.convert (line_addr + f + 1))
+                | SkipB b      -> Ainst.encode (Skip.convert (line_addr - b))
 end
 
 
