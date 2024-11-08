@@ -1,6 +1,6 @@
 (library
  (name lib)
- (modules ast parser lexer machine vector string_tools mnemonics)
+ (modules ast parser lexer machine vector string_tools mnemonics mylist)
  (libraries menhirLib)
 )
 

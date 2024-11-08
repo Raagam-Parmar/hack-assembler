@@ -147,15 +147,13 @@ end = struct
                 match a with
                 | AInst s -> AInst (resolve_symbol h s)
                 | CInst _ -> failwith "machine.Ainst.retrieve_int: unexpected `CInst _' argument"
-                | SkipF _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipF _' argument"
-                | SkipB _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipB _' argument"
+                | Ref _   -> failwith "machine.Ainst.retrieve_int: unexpected `Ref _' argument"
         
         let encode (a : int Ast.instruction) : int list = 
                 match a with
                 | AInst i -> Vector.fill_truncate 16 (Vector.to_binary i)
                 | CInst _ -> failwith "machine.Ainst.retrieve_int: unexpected `CInst _' argument"
-                | SkipF _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipF _' argument"
-                | SkipB _ -> failwith "machine.Ainst.retrieve_int: unexpected `SkipB _' argument"
+                | Ref _   -> failwith "machine.Ainst.retrieve_int: unexpected `Ref _' argument"
 end
 
 
@@ -168,14 +166,13 @@ end
 
 (** [Instruction.encode] takes [(string, int) Hashtable.t] and [string Ast.instruction] and returns [int list] by reolving any AInst or using [Cinst.encode] to encode any CInst *)
 module Instruction : sig
-        (* val encode : (string, int) Hashtbl.t -> string Ast.instruction -> int list *)
+        val encode : (string, int) Hashtbl.t ->int -> string Ast.instruction ->  int list
 end = struct
-        let encode (h : (string, int) Hashtbl.t) (line_addr : int) (a : string Ast.instruction) : int list = 
+        let encode (h : (string, int) Hashtbl.t) (line_offset : int) (a : string Ast.instruction) : int list = 
                 match a with
                 | AInst _      -> Ainst.encode (Ainst.convert h a)
                 | CInst c      -> Cinst.encode c
-                | SkipF f      -> Ainst.encode (Skip.convert (line_addr + f + 1))
-                | SkipB b      -> Ainst.encode (Skip.convert (line_addr - b))
+                | Ref i        -> Ainst.encode (Skip.convert (line_offset + i))
 end
 
 
@@ -231,6 +228,7 @@ end = struct
         let rec edit_instructions (offset : int) (h : (string, int) Hashtbl.t) (insts : string Ast.instruction list) : int = 
                 match insts with
                 | [] -> offset
+                | Ref _ :: _ -> failwith "TODO"
                 | CInst _ :: tail -> edit_instructions offset h tail
                 | AInst v :: tail -> 
                         match int_of_string_opt v with
@@ -263,15 +261,15 @@ end
 
 
 module Blocks : sig
-        val encode : (string, int) Hashtbl.t -> string Ast.Block.t -> int list list
+        val encode : (string, int) Hashtbl.t -> int -> string Ast.Block.t -> int list list
 end = struct
-        let encode (h : (string, int) Hashtbl.t) (b : string Ast.Block.t) : int list list = 
+        let encode (h : (string, int) Hashtbl.t) (block_offset : int) (b : string Ast.Block.t) : int list list = 
                 let insts = Ast.Block.instructions b in
-                List.map (Instruction.encode h) insts
+                Mylist.mapi_offset (Instruction.encode h) block_offset insts
 end
 
 module Program : sig
-        val encode : (string, int) Hashtbl.t -> string Ast.program -> int list list
+        val encode : ?offset:int -> (string, int) Hashtbl.t -> string Ast.program -> int list list
         val encode_pretty_string : (string, int) Hashtbl.t -> string Ast.program -> string list
         val populate : (string, int) Hashtbl.t -> string Ast.program -> unit
 end = struct
@@ -279,10 +277,11 @@ end = struct
                 LabelTable.populate h p;
                 VarTable.populate h p
 
-        let rec encode (h : (string, int) Hashtbl.t) (p : string Ast.program) : int list list = 
+        let rec encode ?(offset=0) (h : (string, int) Hashtbl.t) (p : string Ast.program) : int list list = 
                 match p with
                 | [] -> []
-                | b :: bs -> (Blocks.encode h b) @ encode h bs
+                | b :: bs -> let new_offset = Ast.Block.length b in
+                        (Blocks.encode h offset b) @ (encode ~offset:new_offset h bs)
         
         let encode_pretty_string (h : (string, int) Hashtbl.t) (p : string Ast.program) : string list = 
                 List.map Vector.to_string (encode h p)

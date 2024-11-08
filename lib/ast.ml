@@ -41,8 +41,7 @@ type c_inst = destination option * computation * jump option
 type 'v instruction = 
         | AInst of 'v
         | CInst of c_inst
-        | SkipF of int
-        | SkipB of int
+        | Ref of int
 
 type 'l label = Label of 'l
 
