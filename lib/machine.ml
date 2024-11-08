@@ -228,7 +228,7 @@ end = struct
         let rec edit_instructions (offset : int) (h : (string, int) Hashtbl.t) (insts : string Ast.instruction list) : int = 
                 match insts with
                 | [] -> offset
-                | Ref _ :: _ -> failwith "TODO"
+                | Ref _ :: tail   -> edit_instructions offset h tail
                 | CInst _ :: tail -> edit_instructions offset h tail
                 | AInst v :: tail -> 
                         match int_of_string_opt v with
@@ -280,7 +280,7 @@ end = struct
         let rec encode ?(offset=0) (h : (string, int) Hashtbl.t) (p : string Ast.program) : int list list = 
                 match p with
                 | [] -> []
-                | b :: bs -> let new_offset = Ast.Block.length b in
+                | b :: bs -> let new_offset = Ast.Block.length b + offset in
                         (Blocks.encode h offset b) @ (encode ~offset:new_offset h bs)
         
         let encode_pretty_string (h : (string, int) Hashtbl.t) (p : string Ast.program) : string list = 
