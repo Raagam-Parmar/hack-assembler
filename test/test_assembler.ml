@@ -1,5 +1,5 @@
 (* open OUnit2 *)
-open Lib
+(* open Lib *)
 
 (*
 let make_test name value (ast : string Ast.program) = 
@@ -11,7 +11,7 @@ let b3 : string Ast.Block.t = ( Some (Label "BAR"), [ AInst "3"; CInst (Some [D]
 
 let p : string Ast.program = [b1; b2; b3] *)
 
-let a = [(Some (Lib.Ast.Label "START"), []);
+(* let a = [(Some (Lib.Ast.Label "START"), []);
 (Some (Lib.Ast.Label "F00"),
  [Lib.Ast.AInst "2";
   Lib.Ast.CInst
@@ -28,4 +28,4 @@ let h = Hashtbl.create 10
 let () = Machine.Program.populate h a
 
 let sl = Machine.Program.encode_pretty_string h a
-let () = List.iter print_endline sl
+let () = List.iter print_endline sl *)

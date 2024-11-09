@@ -1,0 +1,4 @@
+1. make instructions independent of order of occurence of registers
+M&D should be equal to D&M
+
+2. make changes to parser so it does not make a bloc for every  single instruction.
