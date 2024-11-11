@@ -17,5 +17,11 @@ let subFrom (r : Ast.register) = Ast.Binary (SubFrom, r)
 let binAnd (r : Ast.register) = Ast.Binary (BinAnd, r)
 let binOr (r : Ast.register) = Ast.Binary (BinOr, r)
 
+let identity (r : Ast.register) = Ast.Unary (Identity, r)
+let bitNot (r : Ast.register) = Ast.Unary (BitNot, r)
+let minus (r : Ast.register) = Ast.Unary (Minus, r)
+let succ (r : Ast.register) = Ast.Unary (Succ, r)
+let pred (r : Ast.register) = Ast.Unary (Pred, r)
+
 let assign (d : Ast.destination) (c : Ast.computation) : string Ast.instruction = 
         CInst (Some d, c, None)
