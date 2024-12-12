@@ -3,3 +3,4 @@ _opam/
 assembler.opam
 lib/vector.mli
 output.txt
+output.hack
